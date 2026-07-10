@@ -30,4 +30,8 @@ app.get("/healthz", (c) =>
   }),
 );
 
+// Durable Objects must be exported from the Worker's main module.
+export { BudgetLedger } from "./harness/budget/ledger";
+export { RunOrchestrator } from "./harness/orchestrator/run";
+
 export default app;
