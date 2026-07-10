@@ -1,18 +1,15 @@
 import { Hono } from "hono";
-import type { Env } from "./env";
 import { SECURITY_HEADERS } from "./security/config";
+import { rateLimit, requireAdmin, type AppEnv } from "./security/middleware";
 
 /**
  * Crucible — public LLM evals arena with honest leaderboards (Cloudflare Worker, Hono).
  *
- * Phase 0 exposes `/healthz` only, wrapped in the site-wide [SECURITY/Opus] security
- * headers. The `/api/*` (run trigger, gate), `/badge/*`, `/methodology`, and SPA
- * surfaces land in later phases behind the full inbound stack (CORS · body cap ·
- * per-IP salted rate limits · admin bearer auth). The RunOrchestrator + BudgetLedger
- * Durable Objects are exported from this module once they land (Phase 1.3).
+ * Surfaces so far: `/healthz`, a rate-limited public run-trigger stub, and an
+ * admin-bearer-guarded endpoint — the [SECURITY/Opus] auth + rate limits are wired from
+ * first deploy (not deferred). The full spotlight SSE run, gate API, badges, /methodology,
+ * and SPA land in later phases. Durable Objects are exported at the bottom of this module.
  */
-type AppEnv = { Bindings: Env };
-
 const app = new Hono<AppEnv>();
 
 // Site-wide security headers on every response (incl. /healthz and error bodies).
@@ -28,6 +25,18 @@ app.get("/healthz", (c) =>
     version: "0.1.0",
     ts: new Date().toISOString(),
   }),
+);
+
+// ─── Public run-trigger (rate-limited per salted IP from first deploy) ───────────────
+// The spotlight live-run's full SSE + BudgetLedger reservation wiring lands in Phase 2;
+// this stub proves the [SECURITY/Opus] per-IP rate limit is enforced on the trigger surface.
+app.post("/api/run", rateLimit("runTrigger"), (c) =>
+  c.json({ status: "accepted", note: "spotlight run wiring lands in Phase 2" }, 202),
+);
+
+// ─── Admin authoring surface (argon2id bearer key + hardest rate limits) ─────────────
+app.post("/api/admin/ping", requireAdmin, (c) =>
+  c.json({ status: "ok", scopes: c.get("adminScopes") ?? [] }),
 );
 
 // Durable Objects must be exported from the Worker's main module.
