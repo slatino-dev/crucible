@@ -5,12 +5,15 @@
  * parsed through Zod at first use, not read as bare strings scattered across the
  * codebase. This interface is the injected shape; it is not the trust boundary.
  *
- * SCAFFOLD STATE (Phase 0): only the platform surface a hello-world Worker needs.
- * D1 (`DB`), R2 (`TRANSCRIPTS`), KV (`AGGREGATE_KV`), Workers AI (`AI`), and the
- * RunOrchestrator + BudgetLedger Durable Object namespaces are added to this
- * interface as their phases land (see ARCHITECTURE "System shape").
+ * SCAFFOLD STATE: the platform surface grows as phases land. R2 (`TRANSCRIPTS`), KV
+ * (`AGGREGATE_KV`), Workers AI (`AI`), and the RunOrchestrator + BudgetLedger Durable
+ * Object namespaces are added to this interface at Phase 1.3/1.4 (see ARCHITECTURE
+ * "System shape").
  */
 export interface Env {
+  /** D1: the registry + results of record (suites … regressions … audit_log). */
+  DB: D1Database;
+
   /**
    * [SECURITY/Opus] HMAC salt for salted-IP hashing and cursor/badge integrity.
    * A Worker SECRET in production (`wrangler secret put HASH_SALT`), a local value

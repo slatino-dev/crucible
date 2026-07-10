@@ -21,8 +21,13 @@ enabled = true
 [assets]
 directory = "./public"
 
-# ─── Bindings (added as their features land — brief: "Provision D1 when the schema
-#     lands; R2 when transcript writes land") ─────────────────────────────────────
-# D1 (registry + results of record) lands in Phase 1.1 with the schema + migrations.
+# ─── Bindings (added as their features land) ────────────────────────────────────
+# D1: registry + results of record (Phase 1.1 — schema + versioned migrations).
+[[d1_databases]]
+binding = "DB"
+database_name = "crucible"
+database_id = "b7835a1a-0b8a-43c5-b404-3d657f7eab46"
+migrations_dir = "migrations"
+
 # R2 (transcripts), KV (aggregate cache), Workers AI (targets + judges), and the
-# RunOrchestrator + BudgetLedger Durable Objects land with their phases.
+# RunOrchestrator + BudgetLedger Durable Objects land with their phases (1.3 / 1.4).
