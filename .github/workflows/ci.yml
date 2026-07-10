@@ -72,13 +72,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # Skip gracefully (green) until Sam adds the CLOUDFLARE_API_TOKEN repo secret
+      # (Workers Scripts:Edit + D1:Edit). A CI runner cannot mint the token, and the
+      # local wrangler OAuth used for the initial deploy is not extractable to CI, so
+      # automated deploy stays a no-op rather than a red job until the secret is wired.
+      - name: Check for Cloudflare token
+        id: cf
+        run: |
+          if [ -n "${{ secrets.CLOUDFLARE_API_TOKEN }}" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "CLOUDFLARE_API_TOKEN not set — skipping automated deploy."
+          fi
       - uses: actions/setup-node@v4
+        if: steps.cf.outputs.present == 'true'
         with:
           node-version: 22
           cache: npm
       - name: Install
+        if: steps.cf.outputs.present == 'true'
         run: npm ci
       - name: Deploy (wrangler)
+        if: steps.cf.outputs.present == 'true'
         run: npx wrangler deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
