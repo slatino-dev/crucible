@@ -1,0 +1,28 @@
+name = "crucible"
+main = "src/index.ts"
+compatibility_date = "2024-11-06"
+compatibility_flags = ["nodejs_compat"]
+
+# ─── PUBLISH TARGET (deploy guard: workers.dev OFF) ─────────────────────────────
+# Phase 0 ships a hello-world Worker. The only intended public address is the custom
+# domain below; workers.dev stays OFF. The [SECURITY/Opus] inbound stack (headers,
+# CORS, body cap, per-IP rate limits) wraps /api and /gate as those surfaces land.
+workers_dev = false
+
+[[routes]]
+pattern = "crucible.samlatino.dev"
+custom_domain = true
+
+[observability]
+enabled = true
+
+# ─── Static assets (Design Loop token sheet + future SPA) ───────────────────────
+# Serves the token sheet at `/` under both `wrangler dev` and the deployed domain.
+[assets]
+directory = "./public"
+
+# ─── Bindings (added as their features land — brief: "Provision D1 when the schema
+#     lands; R2 when transcript writes land") ─────────────────────────────────────
+# D1 (registry + results of record) lands in Phase 1.1 with the schema + migrations.
+# R2 (transcripts), KV (aggregate cache), Workers AI (targets + judges), and the
+# RunOrchestrator + BudgetLedger Durable Objects land with their phases.

@@ -1,0 +1,17 @@
+Crucible
+Copyright 2026 Sam Latino
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this project except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+[FLAGGED FOR SAM] Apache-2.0 is the PRD-recommended license (adoption is the moat;
+the patent grant is preferred over MIT per warehouse discipline). It is applied now
+so the public repo is licensed from day one; ratify before external contributions.
+
+Crucible measures publicly available open-weight models via Cloudflare Workers AI. It
+is not affiliated with, endorsed by, or sponsored by any model provider. Leaderboard
+figures are Crucible's own measurements with stated methodology and error bars; they
+are not vendor benchmarks and carry no warranty.

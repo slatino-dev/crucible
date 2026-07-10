@@ -1,0 +1,42 @@
+{
+  "name": "crucible",
+  "version": "0.1.0",
+  "description": "Public LLM evals arena with honest leaderboards: error bars, bias-mitigated LLM-as-judge, regression gates. Cloudflare free tier.",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "wrangler dev",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "migrate:generate": "drizzle-kit generate",
+    "migrate": "wrangler d1 migrations apply crucible --local",
+    "stats:golden": "vitest run test/golden",
+    "eval:smoke": "vitest run test/eval-smoke.test.ts",
+    "cf-typegen": "wrangler types",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.9.9",
+    "@cloudflare/workers-types": "^5.20260708.1",
+    "@eslint/js": "^9.36.0",
+    "drizzle-kit": "^0.31.5",
+    "eslint": "^9.36.0",
+    "tsx": "^4.23.0",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.44.0",
+    "vitest": "~3.2.4",
+    "wrangler": "^4.40.0"
+  },
+  "dependencies": {
+    "@noble/hashes": "^1.5.0",
+    "drizzle-orm": "^0.44.5",
+    "hono": "^4.9.9",
+    "zod": "^4.1.11"
+  }
+}

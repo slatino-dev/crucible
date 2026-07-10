@@ -1,0 +1,299 @@
+/* ============================================================================
+   theme.css — "Signal Path" design tokens for Crucible (Design Loop step 3)
+   Tailwind v4 CSS-first. Three tiers: base (@theme) -> semantic (@theme inline)
+   -> component. OKLCH scales, 11 steps (50-950). Dark-first with a light remap.
+
+   OWNERSHIP (per PORTFOLIO-V2 + DESIGN-BRIEF, 2026-07-08):
+   - The [LAB BASE] block is the shared Signal Path token base RATIFIED BY CONDUIT
+     (build #2, the de-facto owner this pass). It is consumed here UNCHANGED — copy,
+     not fork. When the base is extracted to a shared package, this block is deleted
+     and imported; keep it byte-identical to Conduit's until then.
+   - The [CRUCIBLE OVERRIDE] block is Crucible's accent + display flourish ONLY:
+     the furnace-ember accent OKLCH(0.72 0.16 55) and the ember chart primary series.
+     Flagged for the lab-wide coherence pass to dedupe against the sibling hues.
+
+   Rules: components consume SEMANTIC tokens only. No raw hex, no magic px, no inline
+   durations. Light mode is a token remap, never per-component overrides.
+   ============================================================================ */
+
+/* ─────────────────────────────────────────────────────────────────────────
+   [LAB BASE] — shared across all Signal Path apps (consumed unchanged from Conduit)
+   `static` forces every token to emit even when unused, so the base is a complete,
+   inheritable reference (Tailwind tree-shakes plain `@theme`; a shared base must not).
+   ───────────────────────────────────────────────────────────────────────── */
+@theme static {
+  /* ── Neutral scale — cool slate (hue 240), OLED-friendly dark surfaces ──── */
+  --color-neutral-50:  oklch(0.985 0.003 240);
+  --color-neutral-100: oklch(0.967 0.005 240);
+  --color-neutral-200: oklch(0.925 0.008 240);
+  --color-neutral-300: oklch(0.865 0.010 240);
+  --color-neutral-400: oklch(0.715 0.013 240);
+  --color-neutral-500: oklch(0.585 0.014 240);
+  --color-neutral-600: oklch(0.455 0.014 240);
+  --color-neutral-700: oklch(0.375 0.014 240);
+  --color-neutral-800: oklch(0.290 0.013 240);
+  --color-neutral-900: oklch(0.195 0.011 240);
+  --color-neutral-950: oklch(0.150 0.010 240);
+
+  /* ── Status hues — tuned per mode in the semantic tier below ────────────── */
+  --color-success-400: oklch(0.800 0.150 155);
+  --color-success-600: oklch(0.515 0.130 155);
+  --color-danger-400:  oklch(0.720 0.180 27);
+  --color-danger-600:  oklch(0.560 0.200 27);
+  --color-warning-400: oklch(0.820 0.150 75);
+  --color-warning-600: oklch(0.520 0.125 75);
+  --color-info-400:    oklch(0.780 0.120 235);
+  --color-info-600:    oklch(0.520 0.140 235);
+
+  /* ── Type: committed lab pairing (faces + licenses recorded in DESIGN.md) ─
+     Display  = Bricolage Grotesque (OFL 1.1) — characterful engineered grotesque
+     Body/UI  = Geist (OFL 1.1)               — neutral infrastructure sans
+     Mono     = Geist Mono (OFL 1.1)          — data readouts, scores, hashes, CIs
+     Fallbacks are size-adjusted at load (see DESIGN.md loading strategy). */
+  --font-display: "Bricolage Grotesque", "Bricolage Grotesque Fallback", ui-sans-serif, system-ui, sans-serif;
+  --font-body:    "Geist", "Geist Fallback", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono:    "Geist Mono", ui-monospace, "SFMono-Regular", "Menlo", monospace;
+
+  /* Type scale (modular ~1.2; tabular-nums enforced on data via component layer) */
+  --text-xs:   0.75rem;  --text-xs--line-height:  1.45;
+  --text-sm:   0.875rem; --text-sm--line-height:  1.5;
+  --text-base: 1rem;     --text-base--line-height: 1.6;
+  --text-lg:   1.125rem; --text-lg--line-height:  1.5;
+  --text-xl:   1.375rem; --text-xl--line-height:  1.35;
+  --text-2xl:  1.75rem;  --text-2xl--line-height: 1.25;
+  --text-3xl:  2.25rem;  --text-3xl--line-height: 1.15;
+  --text-4xl:  3rem;     --text-4xl--line-height: 1.05;
+  --text-5xl:  4rem;     --text-5xl--line-height: 1.0;
+  --tracking-tight: -0.02em;
+  --tracking-label: 0.06em; /* uppercase mono labels / specimen-tag legends */
+
+  /* ── Spacing base (Tailwind v4 dynamic scale) — 4px rhythm ──────────────── */
+  --spacing: 0.25rem;
+
+  /* ── Radii — ROLE-ASSIGNED, deliberately NOT uniform (anti-slop) ────────── */
+  --radius-none: 0px;
+  --radius-xs:   2px;    /* status dots, pass/fail chips */
+  --radius-sm:   4px;    /* inputs, small controls */
+  --radius-md:   6px;    /* buttons, specimen-tag chips */
+  --radius-lg:   10px;   /* cards, leaderboard panels */
+  --radius-xl:   14px;   /* hero surface / assay module */
+  --radius-pill: 9999px; /* status pills, tie-band caps */
+
+  /* ── Shadows — dark-first (top hairline + real depth) + the signal glow ─── */
+  --shadow-1: inset 0 1px 0 oklch(1 0 0 / 0.04), 0 1px 2px oklch(0 0 0 / 0.40);
+  --shadow-2: inset 0 1px 0 oklch(1 0 0 / 0.05), 0 4px 14px oklch(0 0 0 / 0.45);
+  --shadow-3: inset 0 1px 0 oklch(1 0 0 / 0.06), 0 14px 36px oklch(0 0 0 / 0.52);
+
+  /* ── Z-index scale ──────────────────────────────────────────────────────── */
+  --z-base: 0;
+  --z-raised: 10;
+  --z-dropdown: 20;
+  --z-sticky: 30;
+  --z-overlay: 40;
+  --z-modal: 50;
+  --z-toast: 60;
+  --z-tooltip: 70;
+
+  /* ── Motion — ALL animation timing comes from here ──────────────────────── */
+  --duration-instant: 90ms;
+  --duration-fast:    150ms;
+  --duration-base:    220ms;
+  --duration-slow:    320ms;
+  --duration-slower:  520ms;  /* full live-assay-line choreography */
+  --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in:     cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: linear(0, 0.006, 0.025 2.8%, 0.101 6.1%, 0.539 18.9%, 0.721 25.3%, 0.849 31.5%, 0.937 38.1%, 0.968 41.8%, 0.991 45.7%, 1.006 50.1%, 1.015 55%, 1.017 63.9%, 1.001);
+  --stagger-step: 45ms; /* per case tick in the live-assay line */
+
+  /* ── Chart palette — LAB BASE default categorical set (Crucible overrides
+        series 1 + the sequential/diverging ramps below to the ember accent). ─ */
+  --chart-cat-1: oklch(0.780 0.130 205);
+  --chart-cat-2: oklch(0.820 0.140 75);
+  --chart-cat-3: oklch(0.760 0.150 155);
+  --chart-cat-4: oklch(0.700 0.170 350);
+  --chart-cat-5: oklch(0.680 0.150 285);
+  --chart-cat-6: oklch(0.860 0.150 110);
+  --chart-seq-1: oklch(0.930 0.034 205);
+  --chart-seq-2: oklch(0.860 0.062 205);
+  --chart-seq-3: oklch(0.780 0.110 205);
+  --chart-seq-4: oklch(0.660 0.125 205);
+  --chart-seq-5: oklch(0.530 0.104 205);
+  --chart-div-neg: oklch(0.720 0.132 205);
+  --chart-div-mid: oklch(0.585 0.014 240);
+  --chart-div-pos: oklch(0.700 0.160 45);
+  --chart-grid:    oklch(0.290 0.013 240); /* low-contrast gridlines */
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   [CRUCIBLE OVERRIDE] — accent + display flourish (siblings replace THIS block)
+   Furnace ember (hue 55): the crucible metaphor made chromatic (heat = assay).
+   11-step OKLCH scale around the working value oklch(0.72 0.16 55). Later @theme
+   static declarations win, so these re-point --color-accent-* + the chart primary
+   series onto ember without editing the shared [LAB BASE] above.
+   ───────────────────────────────────────────────────────────────────────── */
+@theme static {
+  --color-accent-50:  oklch(0.968 0.024 55);
+  --color-accent-100: oklch(0.935 0.045 55);
+  --color-accent-200: oklch(0.885 0.078 55);
+  --color-accent-300: oklch(0.825 0.115 55);
+  --color-accent-400: oklch(0.760 0.150 55);
+  --color-accent-500: oklch(0.720 0.160 55); /* working furnace-ember value */
+  --color-accent-600: oklch(0.640 0.150 55);
+  --color-accent-700: oklch(0.545 0.128 55);
+  --color-accent-800: oklch(0.455 0.100 55);
+  --color-accent-900: oklch(0.365 0.076 55);
+  --color-accent-950: oklch(0.285 0.056 55);
+
+  /* Chart primary series = the ember accent, so the CI-whisker leaderboard, the
+     live-narrowing CI, and the assay timeline read as one system with the brand.
+     Series 2-6 stay hue-separated (>=45deg) from ember for CVD safety. */
+  --chart-cat-1: oklch(0.760 0.150 55);  /* ember  — primary series / candidate */
+  --chart-cat-2: oklch(0.780 0.120 205); /* cyan   — anchor / reference line */
+  --chart-cat-3: oklch(0.760 0.150 155); /* green  — pass / improvement */
+  --chart-cat-4: oklch(0.700 0.170 350); /* magenta */
+  --chart-cat-5: oklch(0.680 0.150 285); /* violet */
+  --chart-cat-6: oklch(0.780 0.120 235); /* azure  */
+
+  /* Sequential (single-hue ember intensity) — heatmaps / severity density */
+  --chart-seq-1: oklch(0.945 0.028 55);
+  --chart-seq-2: oklch(0.870 0.070 55);
+  --chart-seq-3: oklch(0.780 0.125 55);
+  --chart-seq-4: oklch(0.660 0.150 55);
+  --chart-seq-5: oklch(0.520 0.120 55);
+
+  /* Diverging: improvement (cyan) <- neutral -> regression (ember). A regression
+     runs HOT; an improvement runs COOL — the metaphor drives the axis direction. */
+  --chart-div-neg: oklch(0.720 0.120 205); /* improvement / cooler */
+  --chart-div-mid: oklch(0.585 0.014 240);
+  --chart-div-pos: oklch(0.720 0.160 55);  /* regression / hotter */
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Semantic tier — purpose-named aliases. DARK-FIRST defaults live in :root.
+   ───────────────────────────────────────────────────────────────────────── */
+:root {
+  color-scheme: dark;
+
+  /* Surfaces & structure */
+  --color-bg:          var(--color-neutral-950);
+  --color-surface-1:   var(--color-neutral-900);
+  --color-surface-2:   var(--color-neutral-800);
+  --color-border:      var(--color-neutral-800);
+  --color-border-strong: var(--color-neutral-700);
+
+  /* Text */
+  --color-text-1: var(--color-neutral-50);
+  --color-text-2: var(--color-neutral-300);
+  --color-text-3: var(--color-neutral-400);
+
+  /* Brand / accent */
+  --color-primary:        var(--color-accent-400);
+  --color-primary-strong: var(--color-accent-300);
+  --color-accent-text:    var(--color-accent-300); /* accent AS TEXT on bg (links) */
+  --color-on-primary:     var(--color-neutral-950); /* text on the ember fill */
+
+  /* Status (text-safe on bg for the active mode) */
+  --color-success: var(--color-success-400);
+  --color-danger:  var(--color-danger-400);
+  --color-warning: var(--color-warning-400);
+  --color-info:    var(--color-info-400);
+
+  /* Telemetry-as-design semantic tokens (whisker / tie-band / assay line) */
+  --color-whisker:   var(--color-neutral-400); /* CI whisker stroke */
+  --color-tie-band:  var(--color-neutral-700); /* overlapping-rank band fill */
+  --color-anchor:    var(--chart-cat-2);       /* the fixed anchor reference line */
+
+  /* Effects */
+  --glow-signal:   0 0 0 1px oklch(0.720 0.160 55 / 0.55), 0 0 14px oklch(0.720 0.160 55 / 0.35);
+  --ring-focus:    0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-primary);
+}
+
+/* Light remap — a token remap only (real light mode, not inverted darks). */
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --color-bg:          var(--color-neutral-50);
+  --color-surface-1:   oklch(1 0 0);
+  --color-surface-2:   var(--color-neutral-100);
+  --color-border:      var(--color-neutral-200);
+  --color-border-strong: var(--color-neutral-300);
+
+  --color-text-1: var(--color-neutral-950);
+  --color-text-2: var(--color-neutral-700);
+  --color-text-3: var(--color-neutral-600);
+
+  --color-primary:        var(--color-accent-600);
+  --color-primary-strong: var(--color-accent-700);
+  --color-accent-text:    var(--color-accent-700); /* darker ember for AA text on white */
+  --color-on-primary:     var(--color-neutral-50);
+
+  --color-success: var(--color-success-600);
+  --color-danger:  var(--color-danger-600);
+  --color-warning: var(--color-warning-600);
+  --color-info:    var(--color-info-600);
+
+  --color-whisker:   var(--color-neutral-600);
+  --color-tie-band:  var(--color-neutral-200);
+  --color-anchor:    var(--chart-cat-2);
+
+  --ring-focus:    0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-primary);
+}
+
+/* Honor OS preference when no explicit data-theme is set. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]):not([data-theme="light"]) {
+    color-scheme: light;
+    --color-bg:          var(--color-neutral-50);
+    --color-surface-1:   oklch(1 0 0);
+    --color-surface-2:   var(--color-neutral-100);
+    --color-border:      var(--color-neutral-200);
+    --color-border-strong: var(--color-neutral-300);
+    --color-text-1: var(--color-neutral-950);
+    --color-text-2: var(--color-neutral-700);
+    --color-text-3: var(--color-neutral-600);
+    --color-primary:        var(--color-accent-600);
+    --color-primary-strong: var(--color-accent-700);
+    --color-accent-text:    var(--color-accent-700);
+    --color-on-primary:     var(--color-neutral-50);
+    --color-success: var(--color-success-600);
+    --color-danger:  var(--color-danger-600);
+    --color-warning: var(--color-warning-600);
+    --color-info:    var(--color-info-600);
+    --color-whisker:   var(--color-neutral-600);
+    --color-tie-band:  var(--color-neutral-200);
+  }
+}
+
+/* Expose semantic aliases to Tailwind utilities (bg-bg, text-text-1, etc.). */
+@theme inline {
+  --color-bg: var(--color-bg);
+  --color-surface-1: var(--color-surface-1);
+  --color-surface-2: var(--color-surface-2);
+  --color-border: var(--color-border);
+  --color-border-strong: var(--color-border-strong);
+  --color-text-1: var(--color-text-1);
+  --color-text-2: var(--color-text-2);
+  --color-text-3: var(--color-text-3);
+  --color-primary: var(--color-primary);
+  --color-primary-strong: var(--color-primary-strong);
+  --color-accent-text: var(--color-accent-text);
+  --color-on-primary: var(--color-on-primary);
+  --color-success: var(--color-success);
+  --color-danger: var(--color-danger);
+  --color-warning: var(--color-warning);
+  --color-info: var(--color-info);
+  --color-whisker: var(--color-whisker);
+  --color-tie-band: var(--color-tie-band);
+  --color-anchor: var(--color-anchor);
+}
+
+/* Reduced motion — collapse every animation/transition (incl. the live-assay line). */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

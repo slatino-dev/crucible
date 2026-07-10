@@ -1,0 +1,84 @@
+name: CI
+
+# Types / lint / unit + dependency audit + secret scan on every push and PR, plus a
+# deploy job to crucible.samlatino.dev on main. The migration-check step activates once
+# the D1 schema lands (Phase 1.1); until then there are no migrations to apply.
+# The deploy job needs a CLOUDFLARE_API_TOKEN repo secret (Workers Scripts:Edit + D1:Edit).
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Dependency audit
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Migration check (apply all migrations to a fresh local D1)
+        # Activates when the D1 schema lands (Phase 1.1 adds ./migrations + the binding).
+        # Until then there is nothing to apply, so the step is a no-op rather than a failure.
+        run: |
+          if [ -d migrations ]; then
+            npx wrangler d1 migrations apply crucible --local
+          else
+            echo "No ./migrations yet (Phase 0 hello-world) — skipping migration check."
+          fi
+
+      - name: Unit tests (vitest-pool-workers / workerd)
+        run: npm test
+
+  secret-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy:
+    needs: [verify, secret-scan]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: Deploy (wrangler)
+        run: npx wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

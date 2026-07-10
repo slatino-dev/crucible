@@ -1,0 +1,20 @@
+# Dependencies
+node_modules/
+
+# Cloudflare / Wrangler local state
+.wrangler/
+.dev.vars
+dist/
+
+# Local secrets (only the .example is committed)
+*.local
+
+# Test / build artifacts
+coverage/
+*.tsbuildinfo
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

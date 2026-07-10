@@ -1,0 +1,16 @@
+# Copy to `.dev.vars` for local `wrangler dev`. NEVER commit `.dev.vars`.
+# These are LOCAL-ONLY dev vars. Production secrets live in Worker secrets
+# (`wrangler secret put`), never in wrangler.toml [vars] and never in git.
+
+# ─── Salted-IP / cursor / badge HMAC salt ([SECURITY/Opus] "Secrets") ─────────
+# Keyed salt for the non-reversible salted-IP hash (BudgetLedger per-visitor windows)
+# and for opaque cursor/badge integrity. In PRODUCTION this is a Worker SECRET
+# (`wrangler secret put HASH_SALT`), NEVER wrangler.toml [vars] and NEVER git. Locally
+# set any >=16-char random value. Missing salt fails closed.
+HASH_SALT="local-dev-salt-change-me-0123456789"
+
+# ─── Admin authoring bearer key ([SECURITY/Opus], Phase 1.4) ──────────────────
+# Scoped bearer key for CLI suite-publish / baseline-pin. Stored server-side as an
+# argon2id hash; this local value is the plaintext key the CLI presents. Unset until
+# the admin surface lands. Do NOT reuse across environments.
+# ADMIN_BEARER_KEY=""

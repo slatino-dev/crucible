@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Crucible — the leaderboard that shows its error bars</title>
+    <meta
+      name="description"
+      content="A public LLM evals arena: bias-mitigated LLM-as-judge, bootstrap confidence intervals, honest rank-band leaderboards, regression gates. Cloudflare free tier."
+    />
+    <link rel="stylesheet" href="/tokens.css" />
+    <style>
+      /* Phase-0 placeholder — the SPA + signature CI-whisker leaderboard land in later
+         phases. Uses semantic tokens only (no raw hex) so it re-themes with the base. */
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        display: grid;
+        place-items: center;
+        background: var(--color-bg, #0b0e14);
+        color: var(--color-text-1, #eef);
+        font-family: var(--font-body, ui-sans-serif, system-ui, sans-serif);
+      }
+      main {
+        max-width: 48rem;
+        padding: 2rem;
+        text-align: center;
+      }
+      h1 {
+        font-family: var(--font-display, ui-sans-serif, system-ui, sans-serif);
+        font-size: clamp(2rem, 6vw, 3.5rem);
+        letter-spacing: -0.02em;
+        margin: 0 0 0.5rem;
+      }
+      .ember {
+        color: var(--color-accent-text, #f0803a);
+      }
+      p {
+        color: var(--color-text-2, #aab);
+        font-size: 1.05rem;
+        line-height: 1.6;
+      }
+      code {
+        font-family: var(--font-mono, ui-monospace, monospace);
+        color: var(--color-accent-text, #f0803a);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Crucible<span class="ember">.</span></h1>
+      <p>The leaderboard that shows its error bars.</p>
+      <p>
+        A public LLM evals arena under construction. Health at
+        <code>/healthz</code>.
+      </p>
+    </main>
+  </body>
+</html>
