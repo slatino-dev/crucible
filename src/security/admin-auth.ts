@@ -64,8 +64,16 @@ export function verifySecret(secret: string, encoded: string): boolean {
   return timingSafeEqual(actual, expected);
 }
 
-/** A canned hash used only to equalize timing on the key-not-found path (no info leak). */
-const DUMMY_HASH = hashSecret("dummy-secret-for-uniform-timing-only");
+/**
+ * A hash used only to equalize timing on the key-not-found path (no info leak). Computed
+ * LAZILY on first use — never at module load, since hashSecret calls crypto.getRandomValues
+ * which is disallowed in the Worker global scope.
+ */
+let _dummyHash: string | undefined;
+function dummyHash(): string {
+  if (_dummyHash === undefined) _dummyHash = hashSecret("dummy-secret-for-uniform-timing-only");
+  return _dummyHash;
+}
 
 export interface AdminAuthResult {
   ok: boolean;
@@ -86,13 +94,13 @@ export async function verifyAdminKey(
 ): Promise<AdminAuthResult> {
   const parsed = parseKey(presented);
   if (!parsed) {
-    verifySecret("x", DUMMY_HASH); // equalize timing
+    verifySecret("x", dummyHash()); // equalize timing
     return { ok: false };
   }
   const rows = await db.select().from(schema.apiKeys).where(eq(schema.apiKeys.id, parsed.id)).limit(1);
   const row = rows[0];
   if (!row || row.revokedAt) {
-    verifySecret(parsed.secret, DUMMY_HASH); // equalize timing on not-found / revoked
+    verifySecret(parsed.secret, dummyHash()); // equalize timing on not-found / revoked
     return { ok: false };
   }
   if (!verifySecret(parsed.secret, row.keyHash)) return { ok: false };

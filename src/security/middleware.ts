@@ -39,7 +39,15 @@ export function rateLimit(kind: keyof typeof RATE_LIMITS) {
     const salt = resolveHashSalt(c.env); // fail closed if unset
     const ipHash = await saltedIpHash(salt, c.req.header("CF-Connecting-IP"));
     const { limit, windowMs } = RATE_LIMITS[kind];
-    const d = await ledger(c.env).rateCheck({ bucket: `${kind}:${ipHash}`, limit, windowMs });
+    let d;
+    try {
+      d = await ledger(c.env).rateCheck({ bucket: `${kind}:${ipHash}`, limit, windowMs });
+    } catch {
+      // FAIL CLOSED: if the ledger is momentarily unreachable, refuse rather than admit
+      // unmetered traffic on a public surface.
+      c.header("Retry-After", "2");
+      return problem(c, 429, "RateLimited", "rate-limit backend unavailable");
+    }
     c.header("RateLimit-Limit", String(d.limit));
     c.header("RateLimit-Remaining", String(d.remaining));
     c.header("RateLimit-Reset", String(d.resetSeconds));
@@ -61,22 +69,28 @@ export const requireAdmin = createMiddleware<AppEnv>(async (c, next) => {
   const salt = resolveHashSalt(c.env);
   const ipHash = await saltedIpHash(salt, c.req.header("CF-Connecting-IP"));
   const authHeader = c.req.header("Authorization") ?? "";
-  // Rate-limit BEFORE the (expensive) argon2 verify so an attacker cannot spin CPU.
-  const ipRl = RATE_LIMITS.adminAuthPerIp;
-  const ipDecision = await ledger(c.env).rateCheck({ bucket: `adminAuthIp:${ipHash}`, limit: ipRl.limit, windowMs: ipRl.windowMs });
-  if (!ipDecision.ok) {
-    c.header("Retry-After", String(ipDecision.retryAfterSeconds));
-    return problem(c, 429, "RateLimited", "auth rate limit exceeded");
-  }
-  // Per-key-id limit (bucket on the presented id, if any) so one key cannot be hammered.
-  const keyId = extractKeyId(authHeader);
-  if (keyId) {
-    const keyRl = RATE_LIMITS.adminAuthPerKey;
-    const keyDecision = await ledger(c.env).rateCheck({ bucket: `adminAuthKey:${keyId}`, limit: keyRl.limit, windowMs: keyRl.windowMs });
-    if (!keyDecision.ok) {
-      c.header("Retry-After", String(keyDecision.retryAfterSeconds));
+  // Rate-limit BEFORE the (expensive) argon2 verify so an attacker cannot spin CPU. Fail
+  // closed if the ledger is unreachable — never admit an unmetered auth attempt.
+  try {
+    const ipRl = RATE_LIMITS.adminAuthPerIp;
+    const ipDecision = await ledger(c.env).rateCheck({ bucket: `adminAuthIp:${ipHash}`, limit: ipRl.limit, windowMs: ipRl.windowMs });
+    if (!ipDecision.ok) {
+      c.header("Retry-After", String(ipDecision.retryAfterSeconds));
       return problem(c, 429, "RateLimited", "auth rate limit exceeded");
     }
+    // Per-key-id limit (bucket on the presented id, if any) so one key cannot be hammered.
+    const keyId = extractKeyId(authHeader);
+    if (keyId) {
+      const keyRl = RATE_LIMITS.adminAuthPerKey;
+      const keyDecision = await ledger(c.env).rateCheck({ bucket: `adminAuthKey:${keyId}`, limit: keyRl.limit, windowMs: keyRl.windowMs });
+      if (!keyDecision.ok) {
+        c.header("Retry-After", String(keyDecision.retryAfterSeconds));
+        return problem(c, 429, "RateLimited", "auth rate limit exceeded");
+      }
+    }
+  } catch {
+    c.header("Retry-After", "2");
+    return problem(c, 429, "RateLimited", "auth rate-limit backend unavailable");
   }
 
   const db = drizzle(c.env.DB, { schema });
