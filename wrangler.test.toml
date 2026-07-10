@@ -1,0 +1,38 @@
+# TEST-ONLY wrangler config for vitest-pool-workers (miniflare).
+#
+# Identical bindings to wrangler.toml EXCEPT it omits the `[ai]` binding: Workers AI has no
+# local emulation, so vitest-pool-workers tries to open a REMOTE proxy session for it, which
+# needs a Cloudflare login the CI runner does not have. No test calls `env.AI` (the
+# orchestrator's fixture path uses the `mock` provider; the Phase 1.4 judge tests inject a
+# mock AI runner), so the binding is simply absent here. Keep the rest in sync with
+# wrangler.toml — the D1/KV/R2/DO binding NAMES must match the production surface under test.
+name = "crucible"
+main = "src/index.ts"
+compatibility_date = "2024-11-06"
+compatibility_flags = ["nodejs_compat"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "crucible"
+database_id = "b7835a1a-0b8a-43c5-b404-3d657f7eab46"
+migrations_dir = "migrations"
+
+[[r2_buckets]]
+binding = "TRANSCRIPTS"
+bucket_name = "crucible-transcripts"
+
+[[kv_namespaces]]
+binding = "AGGREGATE_KV"
+id = "aa6acd2c7f0a4032af659978255cc7ab"
+
+[[durable_objects.bindings]]
+name = "BUDGET_LEDGER"
+class_name = "BudgetLedger"
+
+[[durable_objects.bindings]]
+name = "RUN_ORCHESTRATOR"
+class_name = "RunOrchestrator"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["BudgetLedger", "RunOrchestrator"]

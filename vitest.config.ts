@@ -27,7 +27,9 @@ export default defineWorkersConfig({
             HASH_SALT: "test-hmac-salt-not-a-real-secret-0123456789",
           },
         },
-        wrangler: { configPath: "./wrangler.toml" },
+        // Test config omits the [ai] binding (no local emulation → it would need a remote
+        // proxy session + Cloudflare auth the CI runner lacks). No test calls env.AI.
+        wrangler: { configPath: "./wrangler.test.toml" },
       },
     },
   },
